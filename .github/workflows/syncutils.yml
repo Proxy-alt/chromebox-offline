@@ -2,7 +2,7 @@ name: Sync Multiple Remote Files
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # Every minute for testing
+    - cron: '0 0 * * *'  # Every minute for testing
   workflow_dispatch:
 
 permissions:
