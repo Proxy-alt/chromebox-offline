@@ -1,0 +1,70 @@
+name: Sync Multiple Remote Files
+
+on:
+  schedule:
+    - cron: '*/1 * * * *'  # Every minute for testing
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-files:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout current repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Ensure directories exist
+      run: mkdir -p temp utils
+
+    - name: Download and compare files
+      id: sync
+      run: |
+        set -e
+        declare -A files
+        files["cbfstool.tar.gz"]="https://www.mrchromebox.tech/files/util/cbfstool.tar.gz"
+        files["flashrom.tar.gz"]="https://www.mrchromebox.tech/files/util/flashrom.tar.gz"
+        files["gbb_utility.tar.gz"]="https://www.mrchromebox.tech/files/util/gbb_utility.tar.gz"
+        files["ectool.tar.gz"]="https://www.mrchromebox.tech/files/util/ectool.tar.gz"
+
+        changed=false
+
+        for name in "${!files[@]}"; do
+          url="${files[$name]}"
+          dest="utils/$name"
+          temp="temp/$name"
+
+          echo "Checking $name from $url"
+
+          curl -sL "$url" -o "$temp"
+
+          if [ -f "$dest" ]; then
+            if cmp -s "$dest" "$temp"; then
+              echo "No change for $dest"
+              rm "$temp"
+            else
+              echo "Updated: $dest"
+              mv "$temp" "$dest"
+              changed=true
+            fi
+          else
+            echo "New file: $dest"
+            mv "$temp" "$dest"
+            changed=true
+          fi
+        done
+
+        echo "changed=$changed" >> $GITHUB_OUTPUT
+
+    - name: Commit and push if files changed
+      if: steps.sync.outputs.changed == 'true'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add utils/
+        git commit -m "Update synced files from MrChromebox"
+        git push
