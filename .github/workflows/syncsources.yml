@@ -1,4 +1,4 @@
-name: Sync CBFS Files
+name: Sync sources.sh from MrChromebox
 
 on:
   schedule:
@@ -21,13 +21,13 @@ jobs:
     - name: Create directories
       run: mkdir -p cbfs temp
 
-    - name: Download and compare bootorder.usb
+    - name: Download and compare sources.sh
       id: sync
       run: |
         set -e
-        url="https://www.mrchromebox.tech/files/firmware/cbfs/bootorder.usb"
-        dest="cbfs/bootorder.usb"
-        temp="temp/bootorder.usb"
+        url="https://raw.githubusercontent.com/MrChromebox/scripts/refs/heads/main/sources.sh"
+        dest="cbfs/sources.sh"
+        temp="temp/sources.sh"
 
         curl -sL "$url" -o "$temp"
 
@@ -49,6 +49,6 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add cbfs/bootorder.usb
-        git commit -m "Update bootorder.usb from MrChromebox"
+        git add cbfs/sources.sh
+        git commit -m "Update sources.sh from MrChromebox"
         git push
