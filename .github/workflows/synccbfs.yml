@@ -1,0 +1,67 @@
+name: Sync Multiple Remote Files
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Every minute for testing
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-files:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout current repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Ensure directories exist
+      run: mkdir -p temp cbfs
+
+    - name: Download and compare files
+      id: sync
+      run: |
+        set -e
+        declare -A files
+        files["cbfstool.tar.gz"]="https://www.mrchromebox.tech/files/firmware/cbfs/bootorder.usb"
+
+        changed=false
+
+        for name in "${!files[@]}"; do
+          url="${files[$name]}"
+          dest="cbfs/$name"
+          temp="temp/$name"
+
+          echo "Checking $name from $url"
+
+          curl -sL "$url" -o "$temp"
+
+          if [ -f "$dest" ]; then
+            if cmp -s "$dest" "$temp"; then
+              echo "No change for $dest"
+              rm "$temp"
+            else
+              echo "Updated: $dest"
+              mv "$temp" "$dest"
+              changed=true
+            fi
+          else
+            echo "New file: $dest"
+            mv "$temp" "$dest"
+            changed=true
+          fi
+        done
+
+        echo "changed=$changed" >> $GITHUB_OUTPUT
+
+    - name: Commit and push if files changed
+      if: steps.sync.outputs.changed == 'true'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add cbfs/
+        git commit -m "Update synced files from MrChromebox"
+        git push
