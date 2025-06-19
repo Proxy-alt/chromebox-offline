@@ -18,14 +18,14 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Create directories
-      run: mkdir -p cbfs temp
+    - name: Create temporary directory
+      run: mkdir -p temp
 
     - name: Download and compare sources.sh
       id: sync
       run: |
         set -e
-        url="https://raw.githubusercontent.com/MrChromebox/scripts/refs/heads/main/sources.sh"
+        url="https://raw.githubusercontent.com/MrChromebox/scripts/main/sources.sh"
         dest="sources.sh"
         temp="temp/sources.sh"
 
@@ -49,6 +49,6 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add cbfs/sources.sh
+        git add sources.sh
         git commit -m "Update sources.sh from MrChromebox"
         git push
