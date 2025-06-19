@@ -1,4 +1,4 @@
-name: Sync UEFI Full ROMs
+name: Sync RWL Roms
 
 on:
   schedule:
