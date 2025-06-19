@@ -323,27 +323,54 @@ jobs:
         changed=false
 
         for file in "${files[@]}"; do
-          echo "Syncing $file"
+        echo "🔄 Syncing $file"
+        max_attempts=5
+        attempt=1
+        success=false
 
-          curl -sLO "${base_url}${file}.sha1"
-          curl -sLO "${base_url}${file}"
+        while [ $attempt -le $max_attempts ]; do
+            echo "➤ Attempt $attempt for $file"
+            curl -sLO "${base_url}${file}.sha1"
+            curl -sLO "${base_url}${file}"
 
-          if ! sha1sum -c "${file}.sha1" > /dev/null 2>&1; then
-            echo "❌ SHA-1 verification failed for $file"
-            exit 1
-          fi
+            # Check SHA1 file format (should contain exactly one line with 'hash  filename')
+            if ! grep -E "^[0-9a-f]{40}  ${file}$" "${file}.sha1" >/dev/null 2>&1; then
+            echo "⚠️  Invalid .sha1 file format for $file"
+            rm -f "$file" "${file}.sha1"
+            sleep 2
+            ((attempt++))
+            continue
+            fi
 
-          if [ ! -f "fullrom/$file" ] || ! cmp -s "$file" "fullrom/$file"; then
+            if sha1sum -c "${file}.sha1" > /dev/null 2>&1; then
+            echo "✅ Verified $file (attempt $attempt)"
+            success=true
+            break
+            else
+            echo "❌ SHA-1 verification failed for $file (attempt $attempt)"
+            rm -f "$file" "${file}.sha1"
+            sleep 2
+            ((attempt++))
+            fi
+        done
+
+        if ! $success; then
+            echo "🔥 Giving up on $file after $max_attempts attempts"
+            continue
+        fi
+
+        if [ ! -f "fullrom/$file" ] || ! cmp -s "$file" "fullrom/$file"; then
             mv "$file" "fullrom/$file"
             changed=true
-          else
+        else
             rm "$file"
-          fi
+        fi
 
-          rm "${file}.sha1"
+        rm -f "${file}.sha1"
         done
 
         echo "changed=$changed" >> $GITHUB_OUTPUT
+
 
     - name: Commit updated files
       if: steps.sync.outputs.changed == 'true'
