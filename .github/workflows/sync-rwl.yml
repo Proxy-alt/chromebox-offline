@@ -104,7 +104,7 @@ jobs:
 		  rm -f "${file}.md5"
 		done
 
-e		cho "changed=$changed" >> $GITHUB_OUTPUT
+		echo "changed=$changed" >> $GITHUB_OUTPUT
 
 
     - name: Commit updated files
@@ -112,6 +112,6 @@ e		cho "changed=$changed" >> $GITHUB_OUTPUT
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add fullrom/
+        git add rwl/
         git commit -m "Sync rwl from MrChromebox"
         git push
