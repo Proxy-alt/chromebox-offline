@@ -26,7 +26,7 @@ jobs:
       run: |
         set -e
         url="https://raw.githubusercontent.com/MrChromebox/scripts/refs/heads/main/sources.sh"
-        dest="cbfs/sources.sh"
+        dest="sources.sh"
         temp="temp/sources.sh"
 
         curl -sL "$url" -o "$temp"
