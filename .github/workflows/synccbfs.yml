@@ -1,8 +1,10 @@
 name: Sync CBFS Files
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Daily at midnight UTC
+  workflow_run:
+    workflows: ["Sync sources.sh from MrChromebox"]
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:

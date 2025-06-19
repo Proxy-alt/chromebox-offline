@@ -1,8 +1,10 @@
 name: Sync sources.sh from MrChromebox
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Daily at midnight UTC
+  workflow_run:
+    workflows: ["Sync Util Files"]
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
