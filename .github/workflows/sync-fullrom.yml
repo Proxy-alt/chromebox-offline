@@ -355,7 +355,7 @@ jobs:
         done
 
         if ! $success; then
-            echo "🔥 Giving up on $file after $max_attempts attempts"
+            echo "Giving up on $file after $max_attempts attempts"
             continue
         fi
 
