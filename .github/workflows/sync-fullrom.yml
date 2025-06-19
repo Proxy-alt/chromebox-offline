@@ -309,15 +309,6 @@ jobs:
         "coreboot_edk2-markarth-mrchromebox_20250427.rom"
         "coreboot_edk2-skyrim-mrchromebox_20250427.rom"
         "coreboot_edk2-whiterun-mrchromebox_20250427.rom"
-        "seabios-link-mrchromebox_20180912.bin"
-        "seabios-hswbdw_box-mrchromebox_20180912.bin"
-        "seabios-hswbdw_book-mrchromebox_20180912.bin"
-        "seabios-byt-mrchromebox_20180912.bin"
-        "seabios-bsw-mrchromebox_20180912.bin"
-        "seabios-skl-mrchromebox_20180912.bin"
-        "seabios-apl-mrchromebox_20180912.bin"
-        "seabios-kbl-mrchromebox_20250227.bin"
-        "seabios-kbl_18-mrchromebox_20250227.bin"
         )
 
         changed=false
