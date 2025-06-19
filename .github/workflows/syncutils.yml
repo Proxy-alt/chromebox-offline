@@ -1,4 +1,4 @@
-name: Sync Multiple Remote Files
+name: Sync Util Files
 
 on:
   schedule:
