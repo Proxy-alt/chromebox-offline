@@ -24,14 +24,84 @@ jobs:
         run: |
           set -e
           base_url="https://www.mrchromebox.tech/files/firmware/rw_legacy/"
-          files=( ... )  # List truncated here for brevity
+
+          files=(
+            "seabios-link-mrchromebox_20180912.bin"
+            "seabios-hswbdw_box-mrchromebox_20180912.bin"
+            "seabios-hswbdw_book-mrchromebox_20180912.bin"
+            "seabios-byt-mrchromebox_20180912.bin"
+            "seabios-bsw-mrchromebox_20180912.bin"
+            "seabios-skl-mrchromebox_20180912.bin"
+            "seabios-apl-mrchromebox_20180912.bin"
+            "seabios-kbl-mrchromebox_20250227.bin"
+            "seabios-kbl_18-mrchromebox_20250227.bin"
+            "rwl_altfw_kbl-mrchromebox_20250522.bin"
+            "rwl_altfw_kbl_18-mrchromebox_20250522.bin"
+            "rwl_altfw_whl-mrchromebox_20201017.bin"
+            "rwl_altfw_cml-mrchromebox_20210415.bin"
+            "rwl_altfw_drallion-mrchromebox_20221019.bin"
+            "rwl_altfw_glk-mrchromebox_20230110.bin"
+            "rwl_altfw_jsl-mrchromebox_20211115.bin"
+            "rwl_altfw_tgl-mrchromebox_20240729.bin"
+            "rwl_altfw_adl-mrchromebox_20250329.bin"
+            "rwl_altfw_adl_2-mrchromebox_20250329.bin"
+            "rwl_altfw_adl_n-mrchromebox_20250313.bin"
+            "rwl_altfw_mtl-mrchromebox_20250307.bin"
+            "rwl_altfw_stoney-mrchromebox_20200107.bin"
+            "rwl_altfw_pco-mrchromebox_20240412.bin"
+            "rwl_altfw_mdn-mrchromebox_20250522.bin"
+            "rwl_altfw_czn-mrchromebox_20230907.bin"
+          )
 
           changed=false
           mkdir -p rwl
           for file in "${files[@]}"; do
             echo "🔄 Syncing $file"
-            ...
-            echo "changed=$changed" >> $GITHUB_OUTPUT
+            max_attempts=5
+            attempt=1
+            success=false
+
+            while [ $attempt -le $max_attempts ]; do
+              echo "➤ Attempt $attempt for $file"
+              curl -sLO "${base_url}${file}.md5"
+              curl -sLO "${base_url}${file}"
+
+              if ! grep -E "^[0-9a-f]{32}  ${file}$" "${file}.md5" > /dev/null 2>&1; then
+                echo "⚠️  Invalid .md5 file format for $file"
+                rm -f "$file" "${file}.md5"
+                sleep 2
+                ((attempt++))
+                continue
+              fi
+
+              if md5sum -c "${file}.md5" > /dev/null 2>&1; then
+                echo "✅ Verified $file (attempt $attempt)"
+                success=true
+                break
+              else
+                echo "❌ MD5 verification failed for $file (attempt $attempt)"
+                rm -f "$file" "${file}.md5"
+                sleep 2
+                ((attempt++))
+              fi
+            done
+
+            if ! $success; then
+              echo "🚫 Giving up on $file after $max_attempts attempts"
+              continue
+            fi
+
+            if [ ! -f "rwl/$file" ] || ! cmp -s "$file" "rwl/$file"; then
+              mv "$file" "rwl/$file"
+              changed=true
+            else
+              rm "$file"
+            fi
+
+            rm -f "${file}.md5"
+          done
+
+          echo "changed=$changed" >> $GITHUB_OUTPUT
 
       - name: Commit updated files
         if: steps.sync.outputs.changed == 'true'
