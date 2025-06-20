@@ -127,11 +127,13 @@ MrChromebox does not provide any support for running Windows."
 
     # preferUSB?
     if [ "$preferUSB" = true ]; then
-        if ! $CURL -sLo /tmp/bootorder "${cbfs_source}bootorder.usb"; then
-            echo_red "Unable to download bootorder file; boot order cannot be changed."
+        local_bootorder="./cbfs/bootorder.usb"
+        if [ ! -f "$local_bootorder" ]; then
+            echo_red "Local bootorder file not found: $local_bootorder"
         else
+            echo_yellow "Injecting local bootorder file: $local_bootorder"
             ${cbfstoolcmd} "${rwlegacy_file}" remove -n bootorder > /dev/null 2>&1
-            ${cbfstoolcmd} "${rwlegacy_file}" add -n bootorder -f /tmp/bootorder -t raw > /dev/null 2>&1
+            ${cbfstoolcmd} "${rwlegacy_file}" add -n bootorder -f "$local_bootorder" -t raw > /dev/null 2>&1
         fi
     fi
 
