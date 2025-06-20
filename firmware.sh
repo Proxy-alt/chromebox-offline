@@ -115,19 +115,19 @@ MrChromebox does not provide any support for running Windows."
         echo -e ""
     fi
 
-    #download RW_LEGACY update
-    echo_yellow "\nDownloading RW_LEGACY firmware update\n(${rwlegacy_file})"
-    $CURL -sLO "${rwlegacy_source}${rwlegacy_file}.md5"
-    $CURL -sLO "${rwlegacy_source}${rwlegacy_file}"
-    #verify checksum on downloaded file
-    if ! md5sum -c "${rwlegacy_file}.md5" > /dev/null 2>&1; then
-        exit_red "RW_LEGACY download checksum fail; download corrupted, cannot flash"
+    # use local RW_LEGACY image
+    echo_yellow "\nUsing local RW_LEGACY firmware file:\n(./rwl/${rwlegacy_file})"
+
+    if [ ! -f "./rwl/${rwlegacy_file}" ]; then
+        exit_red "Local RW_LEGACY file not found: ./rwl/${rwlegacy_file}"
         return 1
     fi
 
-    #preferUSB?
-    if [ "$preferUSB" = true  ]; then
-        if ! $CURL -sLo bootorder "${cbfs_source}bootorder.usb"; then
+    cp "./rwl/${rwlegacy_file}" "${rwlegacy_file}"
+
+    # preferUSB?
+    if [ "$preferUSB" = true ]; then
+        if ! $CURL -sLo /tmp/bootorder "${cbfs_source}bootorder.usb"; then
             echo_red "Unable to download bootorder file; boot order cannot be changed."
         else
             ${cbfstoolcmd} "${rwlegacy_file}" remove -n bootorder > /dev/null 2>&1
@@ -135,7 +135,7 @@ MrChromebox does not provide any support for running Windows."
         fi
     fi
 
-    #flash updated RW_LEGACY firmware
+    # flash RW_LEGACY firmware
     echo_yellow "Installing RW_LEGACY firmware"
     [[ "$isChromeOS" = false ]] && FMAP="--fmap"
     if ! ${flashromcmd} -w $FMAP -i RW_LEGACY:${rwlegacy_file} ${noverify} -o /tmp/flashrom.log > /dev/null 2>&1; then
@@ -143,9 +143,7 @@ MrChromebox does not provide any support for running Windows."
         echo_red "An error occurred flashing the RW_LEGACY firmware."
     else
         echo_green "RW_LEGACY firmware successfully installed/updated."
-        # update firmware type
         firmwareType="Stock ChromeOS w/RW_LEGACY"
-        #Prevent from trying to boot stock ChromeOS install
         [[ "$boot_mounted" = true ]] && rm -rf /tmp/boot/syslinux > /dev/null 2>&1
     fi
 
