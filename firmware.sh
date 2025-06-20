@@ -213,8 +213,7 @@ able to boot from it after installing the UEFI Full ROM firmware."
         [[ "$REPLY" = "y" || "$REPLY" = "Y" ]] || return
     fi
 
-    #determine correct file / URL
-    firmware_source=${fullrom_source}
+    #determine correct file
     eval coreboot_file="$`echo "coreboot_uefi_${device}"`"
 
     #rammus special case (upgrade from older UEFI firmware)
@@ -299,20 +298,19 @@ and you need to recover using an external EEPROM programmer. [Y/n] "
         [ $? -ne 0 ] && return 1
     fi
 
-    #download firmware file
-    cd /tmp || { exit_red "Error changing to tmp dir; cannot proceed"; return 1; }
-    echo_yellow "\nDownloading Full ROM firmware\n(${coreboot_file})"
-    if ! $CURL -sLO "${firmware_source}${coreboot_file}"; then
-        exit_red "Firmware download failed; cannot flash. curl error code $?"; return 1
-    fi
-    if ! $CURL -sLO "${firmware_source}${coreboot_file}.sha1"; then
-        exit_red "Firmware checksum download failed; cannot flash."; return 1
-    fi
+    # set source path before changing directories
+    local_fw_path="$(pwd)/fullrom/${coreboot_file}"
 
-    #verify checksum on downloaded file
-    if ! sha1sum -c "${coreboot_file}.sha1" > /dev/null 2>&1; then
-        exit_red "Firmware image checksum verification failed; download corrupted, cannot flash."; return 1
+    cd /tmp || { exit_red "Error changing to tmp dir; cannot proceed"; return 1; }
+
+    echo_yellow "\nUsing local Full ROM firmware\n(${local_fw_path})"
+    if [ ! -f "$local_fw_path" ]; then
+        exit_red "Local firmware not found: $local_fw_path"; return 1
     fi
+    
+    cp "$local_fw_path" "${coreboot_file}" || {
+        exit_red "Failed to copy firmware to /tmp"; return 1
+    }
 
     #persist serial number?
     if [ -f /tmp/serial.txt ]; then
