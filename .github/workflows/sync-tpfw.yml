@@ -25,40 +25,66 @@ jobs:
       id: sync
       run: |
         set -e
+        base_url="https://www.mrchromebox.tech/files/firmware/other/"
         declare -A files
-        files["rose_v1.1.8546-ee1861e9e.bin"]="https://www.mrchromebox.tech/files/firmware/other/rose_v1.1.8546-ee1861e9e.bin"
-        files["rose_v2.0.653-dfd8046c6.bin"]="https://www.mrchromebox.tech/files/firmware/other/rose_v2.0.653-dfd8046c6.bin"
+        files=(
+        "rose_v1.1.8546-ee1861e9e.bin"
+        "rose_v2.0.653-dfd8046c6.bin"
+        )
 
         changed=false
 
-        for name in "${!files[@]}"; do
-          url="${files[$name]}"
-          dest="touchpad/$name"
-          temp="temp/$name"
+        for file in "${files[@]}"; do
+        echo "🔄 Syncing $file"
+        max_attempts=5
+        attempt=1
+        success=false
 
-          echo "Checking $name from $url"
+        while [ $attempt -le $max_attempts ]; do
+            echo "➤ Attempt $attempt for $file"
+            curl -sLO "${base_url}${file}.sha1"
+            curl -sLO "${base_url}${file}"
 
-          curl -sL "$url" -o "$temp"
-
-          if [ -f "$dest" ]; then
-            if cmp -s "$dest" "$temp"; then
-              echo "No change for $dest"
-              rm "$temp"
-            else
-              echo "Updated: $dest"
-              mv "$temp" "$dest"
-              changed=true
+            # Check SHA1 file format (should contain exactly one line with 'hash  filename')
+            if ! grep -E "^[0-9a-f]{40}  ${file}$" "${file}.sha1" >/dev/null 2>&1; then
+            echo "⚠️  Invalid .sha1 file format for $file"
+            rm -f "$file" "${file}.sha1"
+            sleep 2
+            ((attempt++))
+            continue
             fi
-          else
-            echo "New file: $dest"
-            mv "$temp" "$dest"
+
+            if sha1sum -c "${file}.sha1" > /dev/null 2>&1; then
+            echo "✅ Verified $file (attempt $attempt)"
+            success=true
+            break
+            else
+            echo "❌ SHA-1 verification failed for $file (attempt $attempt)"
+            rm -f "$file" "${file}.sha1"
+            sleep 2
+            ((attempt++))
+            fi
+        done
+
+        if ! $success; then
+            echo "Giving up on $file after $max_attempts attempts"
+            continue
+        fi
+
+        if [ ! -f "touchpad/$file" ] || ! cmp -s "$file" "touchpad/$file"; then
+            mv "$file" "touchpad/$file"
             changed=true
-          fi
+        else
+            rm "$file"
+        fi
+
+        rm -f "${file}.sha1"
         done
 
         echo "changed=$changed" >> $GITHUB_OUTPUT
 
-    - name: Commit and push if files changed
+
+    - name: Commit updated files
       if: steps.sync.outputs.changed == 'true'
       run: |
         git config user.name "github-actions[bot]"
