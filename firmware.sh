@@ -485,43 +485,27 @@ function downgrade_touchpad_fw()
     # offer to downgrade touchpad firmware on EVE
     if [[ "${device^^}" = "EVE" ]]; then
         echo_green "\nDowngrade Touchpad Firmware"
-        echo_yellow "If you plan to run Windows on your Pixelbook, it is necessary to downgrade
-the touchpad firmware, otherwise the touchpad will not work."
+        echo_yellow "If you plan to run Windows on your Pixelbook, it is necessary to downgrade the touchpad firmware, otherwise the touchpad will not work."
         echo_yellow "You should do this after flashing the UEFI firmware, but before rebooting."
         read -rep "Do you wish to downgrade the touchpad firmware now? [y/N] "
         if [[ "$REPLY" = "y" || "$REPLY" = "Y" ]] ; then
             # ensure firmware write protect disabled
             [[ "$wpEnabled" = true ]] && { exit_red "\nHardware write-protect enabled, cannot downgrade touchpad firmware."; return 1; }
-            # download TP firmware
-            echo_yellow "\nDownloading touchpad firmware\n(${touchpad_eve_fw})"
-            $CURL -s -LO "${other_source}${touchpad_eve_fw}"
-            $CURL -s -LO "${other_source}${touchpad_eve_fw}.sha1"
-            #verify checksum on downloaded file
-            if sha1sum -c ${touchpad_eve_fw}.sha1 > /dev/null 2>&1; then
-                # flash TP firmware
-                echo_green "Flashing touchpad firmware -- do not touch the touchpad while updating!"
-                if ${flashromcmd/${flashrom_programmer}} -p ec:type=tp -i EC_RW -w ${touchpad_eve_fw} -o /tmp/flashrom.log >/dev/null 2>&1; then
-                    echo_green "Touchpad firmware successfully downgraded."
-                    echo_yellow "Please reboot your Pixelbook now."
-                else
-                    # try with older eve flashrom
-                    [[ "$isChromeOS" == "true" ]] && tpPath="/usr/local/bin" || tpPath="/tmp"
-                    (
-                        cd $tpPath
-                        $CURL -sLO "${util_source}flashrom_eve_tp"
-                        chmod +x flashrom_eve_tp
-                    )
-                    if $tpPath/flashrom_eve_tp -p ec:type=tp -i EC_RW -w ${touchpad_eve_fw} -o /tmp/flashrom.log >/dev/null 2>&1; then
-                        echo_green "Touchpad firmware successfully downgraded."
-                        echo_yellow "Please reboot your Pixelbook now."
-                    else
-                        echo_red "Error flashing touchpad firmware:"
-                        cat /tmp/flashrom.log
-                        echo_yellow "\nThis function sometimes doesn't work under Linux, in which case it is\nrecommended to try under ChromiumOS."
-                    fi
-                fi
+
+            # check that the firmware file exists locally
+            [[ -f "./touchpad/${touchpad_eve_fw}" ]] || { exit_red "\nFirmware file not found: ${touchpad_eve_fw}"; return 1; }
+
+            # flash TP firmware using local pre-verified file
+            echo_yellow "\nUsing pre-verified touchpad firmware (${touchpad_eve_fw})"
+            echo_green "Flashing touchpad firmware -- do not touch the touchpad while updating!"
+            if ${flashromcmd/${flashrom_programmer}} -p ec:type=tp -i EC_RW -w "./touchpad/${touchpad_eve_fw}" -o /tmp/flashrom.log >/dev/null 2>&1; then
+                echo_green "Touchpad firmware successfully downgraded."
+                echo_yellow "Please reboot your Pixelbook now."
             else
-                echo_red "Touchpad firmware download checksum fail; download corrupted, cannot flash."
+                echo_red "Error flashing touchpad firmware:"
+                cat /tmp/flashrom.log
+                echo_yellow "\nThis function sometimes doesn't work under Linux, in which case it is\nrecommended to try under ChromiumOS."
+                return 1
             fi
         fi
         read -rep "Press [Enter] to return to the main menu."
@@ -536,43 +520,27 @@ function upgrade_touchpad_fw()
     # offer to upgrade touchpad firmware on EVE
     if [[ "${device^^}" = "EVE" ]]; then
         echo_green "\nUpgrade Touchpad Firmware"
-        echo_yellow "If you plan to restore ChromeOS on your Pixelbook, it is necessary to upgrade
-the touchpad firmware, otherwise the touchpad will not work."
+        echo_yellow "If you plan to restore ChromeOS on your Pixelbook, it is necessary to upgrade the touchpad firmware, otherwise the touchpad will not work."
         echo_yellow "You should do this after restoring the stock firmware, but before rebooting."
         read -rep "Do you wish to upgrade the touchpad firmware now? [y/N] "
         if [[ "$REPLY" = "y" || "$REPLY" = "Y" ]] ; then
             # ensure firmware write protect disabled
             [[ "$wpEnabled" = true ]] && { exit_red "\nHardware write-protect enabled, cannot upgrade touchpad firmware."; return 1; }
-            # download TP firmware
-            echo_yellow "\nDownloading touchpad firmware\n(${touchpad_eve_fw_stock})"
-            $CURL -s -LO "${other_source}${touchpad_eve_fw_stock}"
-            $CURL -s -LO "${other_source}${touchpad_eve_fw_stock}.sha1"
-            #verify checksum on downloaded file
-            if sha1sum -c ${touchpad_eve_fw_stock}.sha1 > /dev/null 2>&1; then
-                # flash TP firmware
-                echo_green "Flashing touchpad firmware -- do not touch the touchpad while updating!"
-                if ${flashromcmd/${flashrom_programmer}} -p ec:type=tp -i EC_RW -w ${touchpad_eve_fw_stock} -o /tmp/flashrom.log >/dev/null 2>&1; then
-                    echo_green "Touchpad firmware successfully upgraded."
-                    echo_yellow "Please reboot your Pixelbook now."
-                else
-                    # try with older eve flashrom
-                    [[ "$isChromeOS" == "true" ]] && tpPath="/usr/local/bin" || tpPath="/tmp"
-                    (
-                        cd $tpPath
-                        $CURL -sLO "${util_source}flashrom_eve_tp"
-                        chmod +x flashrom_eve_tp
-                    )
-                    if $tpPath/flashrom_eve_tp -p ec:type=tp -i EC_RW -w ${touchpad_eve_fw_stock} -o /tmp/flashrom.log >/dev/null 2>&1; then
-                        echo_green "Touchpad firmware successfully upgraded."
-                        echo_yellow "Please reboot your Pixelbook now."
-                    else
-                        echo_red "Error flashing touchpad firmware:"
-                        cat /tmp/flashrom.log
-                        echo_yellow "\nThis function sometimes doesn't work under Linux, in which case it is\nrecommended to try under ChromeOS."
-                    fi
-                fi
+
+            # check that the firmware file exists locally
+            [[ -f "./touchpad/${touchpad_eve_fw_stock}" ]] || { exit_red "\nFirmware file not found: ${touchpad_eve_fw_stock}"; return 1; }
+
+            # flash TP firmware using local pre-verified file
+            echo_yellow "\nUsing pre-verified touchpad firmware (${touchpad_eve_fw_stock})"
+            echo_green "Flashing touchpad firmware -- do not touch the touchpad while updating!"
+            if ${flashromcmd/${flashrom_programmer}} -p ec:type=tp -i EC_RW -w "./touchpad/${touchpad_eve_fw_stock}" -o /tmp/flashrom.log >/dev/null 2>&1; then
+                echo_green "Touchpad firmware successfully upgraded."
+                echo_yellow "Please reboot your Pixelbook now."
             else
-                echo_red "Touchpad firmware download checksum fail; download corrupted, cannot flash."
+                echo_red "Error flashing touchpad firmware:"
+                cat /tmp/flashrom.log
+                echo_yellow "\nThis function sometimes doesn't work under Linux, in which case it is\nrecommended to try under ChromeOS."
+                return 1
             fi
         fi
         read -rep "Press [Enter] to return to the main menu."
