@@ -90,5 +90,5 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add touchpad/
-        git commit -m "Update synced files from MrChromebox"
+        git commit -m "Update synced files from MrChromebox" || echo "No changes to commit"
         git push
