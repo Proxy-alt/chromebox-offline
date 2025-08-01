@@ -27,14 +27,14 @@ jobs:
         set -e
         declare -A files
         util_source="https://www.mrchromebox.tech/files/util/"
-        files["cbfstool.tar.gz"]="${util_source}/files/util/cbfstool.tar.gz"
-        files["flashrom.tar.gz"]="${util_source}/files/util/flashrom.tar.gz"
-        files["gbb_utility.tar.gz"]="${util_source}/files/util/gbb_utility.tar.gz"
-        files["ectool.tar.gz"]="${util_source}/files/util/ectool.tar.gz"
-        files["cbfstool-musl.tar.gz"]="${util_source}/files/util/cbfstool-musl.tar.gz"
-        files[""flashrom_old.tar.gz"]="${util_source}/files/util/flashrom_old.tar.gz"
-        files["flashrom_ups_int_20241214.tar.gz"]="${util_source}/files/util/flashrom_ups_int_20241214.tar.gz"
-        files["gbb_utility-musl.tar.gz"]="${util_source}/files/util/gbb_utility-musl.tar.gz"
+        files["cbfstool.tar.gz"]="${util_source}cbfstool.tar.gz"
+        files["flashrom.tar.gz"]="${util_source}flashrom.tar.gz"
+        files["gbb_utility.tar.gz"]="${util_source}gbb_utility.tar.gz"
+        files["ectool.tar.gz"]="${util_source}ectool.tar.gz"
+        files["cbfstool-musl.tar.gz"]="${util_source}cbfstool-musl.tar.gz"
+        files["flashrom_old.tar.gz"]="${util_source}flashrom_old.tar.gz"
+        files["flashrom_ups_int_20241214.tar.gz"]="${util_source}flashrom_ups_int_20241214.tar.gz"
+        files["gbb_utility-musl.tar.gz"]="${util_source}gbb_utility-musl.tar.gz"
 
         changed=false
 
@@ -71,5 +71,5 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add utils/
-        git commit -m "Update synced files from MrChromebox"
+        git commit -m "Update synced files from MrChromebox" || echo "No changes to commit"
         git push

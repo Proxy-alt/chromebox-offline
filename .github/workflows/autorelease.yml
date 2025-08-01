@@ -15,7 +15,7 @@ jobs:
         run: |
           repo_name=$(basename ${{ github.repository }})
           archive_name="${repo_name}-current.tar.gz"
-          tar --exclude='.github' --exlcude='.git' -czf "$archive_name" .
+          tar --exclude='.github' --exclude='.git' -czf "$archive_name" .
 
       - name: Compute current SHA256
         id: current_hash
