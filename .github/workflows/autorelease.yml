@@ -1,0 +1,55 @@
+name: Conditional AutoRelease
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  conditional_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Create tar.gz archive
+        run: |
+          repo_name=$(basename ${{ github.repository }})
+          archive_name="${repo_name}-current.tar.gz"
+          tar --exclude='.github' --exlcude='.git' -czf "$archive_name" .
+
+      - name: Compute current SHA256
+        id: current_hash
+        run: |
+          sha256=$(sha256sum *.tar.gz | cut -d ' ' -f1)
+          echo "sha256=$sha256" >> $GITHUB_OUTPUT
+
+      - name: Fetch latest release asset SHA256
+        id: latest_hash
+        run: |
+          latest_asset_url=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest \
+            | jq -r '.assets[0].browser_download_url')
+          curl -LO "$latest_asset_url"
+          latest_file=$(basename "$latest_asset_url")
+          latest_sha256=$(sha256sum "$latest_file" | cut -d ' ' -f1)
+          echo "sha256=$latest_sha256" >> $GITHUB_OUTPUT
+
+      - name: Decide if release is needed
+        id: should_release
+        run: |
+          if [ "${{ steps.current_hash.outputs.sha256 }}" = "${{ steps.latest_hash.outputs.sha256 }}" ]; then
+            echo "release=false" >> $GITHUB_OUTPUT
+          else
+            echo "release=true" >> $GITHUB_OUTPUT
+
+      - name: Publish release if changed
+        if: steps.should_release.outputs.release == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "release-$(date +%Y-%m-%d)"
+          name: "Release $(date +%Y-%m-%d)"
+          body: |
+            New release. SHA256: ${{ steps.current_hash.outputs.sha256 }}
+          files: |
+            *.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
