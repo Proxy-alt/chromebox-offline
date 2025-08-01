@@ -32,6 +32,9 @@ jobs:
         files["gbb_utility.tar.gz"]="${util_source}/files/util/gbb_utility.tar.gz"
         files["ectool.tar.gz"]="${util_source}/files/util/ectool.tar.gz"
         files["cbfstool-musl.tar.gz"]="${util_source}/files/util/cbfstool-musl.tar.gz"
+        files[""flashrom_old.tar.gz"]="${util_source}/files/util/flashrom_old.tar.gz"
+        files["flashrom_ups_int_20241214.tar.gz"]="${util_source}/files/util/flashrom_ups_int_20241214.tar.gz"
+        files["gbb_utility-musl.tar.gz"]="${util_source}/files/util/gbb_utility-musl.tar.gz"
 
         changed=false
 

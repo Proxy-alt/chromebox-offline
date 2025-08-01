@@ -209,8 +209,8 @@ function get_cbfstool()
         else
             util_file="cbfstool.tar.gz"
         fi
-        if [ -e "${working_dir}/${util_file}" ]; then
-            mv "${working_dir}/${util_file}" cbfstool.tar.gz
+        if [ -e "${working_dir}/utils/${util_file}" ]; then
+            mv "${working_dir}/utils/${util_file}" cbfstool.tar.gz
             else
             echo_red "${util_file} not found; cannot proceed."
             #restore working dir
@@ -255,11 +255,12 @@ function get_flashrom()
                 util_file="flashrom_ups_int_20241214.tar.gz"
             fi
         fi
-        $CURL -sLo "flashrom.tar.gz" "${util_source}${util_file}"
-        if [[ $? -ne 0 ]]; then
-            echo_red "Error downloading flashrom; cannot proceed."
+        if [ -e "${working_dir}/utils/${util_file}" ]; then
+            mv "${working_dir}/utils/${util_file}" flashrom.tar.gz
+            else
+            echo_red "${util_file} not found; cannot proceed."
             #restore working dir
-            cd "${working_dir}"
+            cd "${working_dir}" 
             return 1
         fi
 
@@ -303,9 +304,10 @@ function get_gbb_utility()
         else
             util_file="gbb_utility.tar.gz"
         fi
-        $CURL -sLo "gbb_utility.tar.gz" "${util_source}${util_file}"
-        if [ $? -ne 0 ]; then
-            echo_red "Error downloading gbb_utility; cannot proceed."
+        if [ -e "${working_dir}/utils/${util_file}" ]; then
+            mv "${working_dir}/utils/${util_file}" gbb_utility.tar.gz
+        else
+            echo_red "gbb_utility.tar.gz not found; cannot proceed."
             #restore working dir
             cd ${working_dir}
             return 1
@@ -338,9 +340,10 @@ function get_ectool()
 
         cd $(dirname ${ectoolcmd})
 
-        $CURL -sLO "${util_source}ectool.tar.gz"
-        if [ $? -ne 0 ]; then
-            echo_red "Error downloading ectool; cannot proceed."
+        if [ -e "${working_dir}/utils/ectool.tar.gz" ]; then
+            mv "${working_dir}/utils/ectool.tar.gz" ectool.tar.gz
+        else
+            echo_red "ectool.tar.gz not found; cannot proceed."
             #restore working dir
             cd ${working_dir}
             return 1
