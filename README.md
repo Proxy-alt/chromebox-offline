@@ -28,9 +28,8 @@ The source was adapted with help from [proxy-alt](https://github.com/proxy-alt) 
 
 ## Credits
 
-- 👨‍💻 Script authored and maintained by [MrChromebox](https://github.com/MrChromebox)
-- 🛠️ Offline adaptation and automation powered by [proxy-alt](https://github.com/proxy-alt)
-- ❤️ Built and maintained by the community for the community
+- Script authored and maintained by [MrChromebox](https://github.com/MrChromebox)
+- Offline adaptation and automation powered by [proxy-alt](https://github.com/proxy-alt)
 
 ---
 
