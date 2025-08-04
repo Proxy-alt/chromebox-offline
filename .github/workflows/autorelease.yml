@@ -9,13 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - name: Create tar.gz archive
+      - name: Create tar.gz archive safely
         run: |
-          repo_name=$(basename ${{ github.repository }})
+          repo_name=$(basename "${{ github.repository }}")
           archive_name="${repo_name}-current.tar.gz"
-          tar --exclude='.github' --exclude='.git' -czf "$archive_name" .
+          mkdir -p dist
+          rsync -a --exclude='.git' --exclude='.github' ./ ./dist/
+          tar -czf "$archive_name" -C dist .
 
       - name: Compute current SHA256
         id: current_hash
