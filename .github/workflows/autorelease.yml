@@ -25,33 +25,32 @@ jobs:
         id: current_hash
         run: |
           sha256=$(sha256sum *.tar.gz | cut -d ' ' -f1)
-          echo "sha256=$sha256" >> $GITHUB_OUTPUT
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
 
       - name: Fetch latest release asset SHA256
         id: latest_hash
         run: |
           latest_asset_url=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest \
-          | jq -r '.assets[] | select(.name | endswith(".tar.gz")) | .browser_download_url')
+            | jq -r '.assets[] | select(.name | endswith(".tar.gz")) | .browser_download_url')
 
           if [ -z "$latest_asset_url" ]; then
             echo "No valid asset URL found." >&2
-            echo "sha256=" >> $GITHUB_OUTPUT
-            exit 0 
+            echo "sha256=" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-    curl -LO "$latest_asset_url"
-    latest_file=$(basename "$latest_asset_url")
-    latest_sha256=$(sha256sum "$latest_file" | cut -d ' ' -f1)
-    echo "sha256=$latest_sha256" >> $GITHUB_OUTPUT
-
+          curl -LO "$latest_asset_url"
+          latest_file=$(basename "$latest_asset_url")
+          latest_sha256=$(sha256sum "$latest_file" | cut -d ' ' -f1)
+          echo "sha256=$latest_sha256" >> "$GITHUB_OUTPUT"
 
       - name: Decide if release is needed
         id: should_release
         run: |
           if [ "${{ steps.current_hash.outputs.sha256 }}" = "${{ steps.latest_hash.outputs.sha256 }}" ]; then
-            echo "release=false" >> $GITHUB_OUTPUT
+            echo "release=false" >> "$GITHUB_OUTPUT"
           else
-            echo "release=true" >> $GITHUB_OUTPUT
+            echo "release=true" >> "$GITHUB_OUTPUT"
 
       - name: Publish release if changed
         if: steps.should_release.outputs.release == 'true'
