@@ -66,7 +66,7 @@ jobs:
         coreboot_edk2-awasuki-mrchromebox_20250830.rom"
         "coreboot_edk2-dexi-mrchromebox_20250830.rom"
         "coreboot_edk2-dita-mrchromebox_20250830.rom"
-        coreboot_edk2-awadoron-mrchromebox_20250830.rom"
+        "coreboot_edk2-awadoron-mrchromebox_20250830.rom"
         "coreboot_edk2-crota360-mrchromebox_20250912.rom"
         "coreboot_edk2-clapper-mrchromebox_20250427.rom"
         "coreboot_edk2-enguarde-mrchromebox_20250427.rom"
@@ -387,5 +387,6 @@ jobs:
         git add fullrom/
         git commit -m "Sync UEFI Full ROMs from MrChromebox" || echo "No changes to commit"
         git push
+
 
 
