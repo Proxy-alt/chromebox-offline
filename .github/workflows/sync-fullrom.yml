@@ -265,7 +265,7 @@ jobs:
         "coreboot_edk2-zavala-mrchromebox_20250427.rom"
         "coreboot_edk2-constitution-mrchromebox_20250427.rom"
         "coreboot_edk2-intrepid-mrchromebox_20250427.rom"
-        export coreboot_uefi_gladios="coreboot_edk2-gladios-mrchromebox_20250427.rom"
+        "coreboot_edk2-gladios-mrchromebox_20250427.rom"
         "coreboot_edk2-kinox-mrchromebox_20250427.rom"
         "coreboot_edk2-kuldax-mrchromebox_20250427.rom"
         "coreboot_edk2-lisbon-mrchromebox_20250427.rom"
@@ -387,4 +387,5 @@ jobs:
         git add fullrom/
         git commit -m "Sync UEFI Full ROMs from MrChromebox" || echo "No changes to commit"
         git push
+
 
